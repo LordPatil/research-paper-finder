@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Paper Finder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Research Paper Finder</h1>
+
+        <!-- Search form -->
+        <form method="POST">
+            <div class="input-group">
+                <input type="text" id="topic" name="topic" required placeholder="Enter a research topic" value="{{ request.form['topic'] if request.form.get('topic') else '' }}">
+                <select name="sort_by" id="sort_by">
+                    <option value="" disabled selected>Sort by</option>
+                    <option value="year" {% if sort_by == 'year' %}selected{% endif %}>Year of Publication</option>
+                </select>
+                <button type="submit">Search</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results -->
+    {% if papers %}
+        <h2>Results for "{{ request.form['topic'] }}":</h2>
+        <div id="results">
+            {% for paper in papers %}
+                <div class="paper">
+                    <h3>{{ paper.title }}</h3>
+                    <p><strong>Authors:</strong> {{ paper.authors }}</p>
+                    <p><strong>Year:</strong> {{ paper.year }}</p>
+                    <p><a href="https://arxiv.org/abs/{{ paper.doi }}" target="_blank">Link to Paper</a></p>
+                </div>
+            {% endfor %}
+        </div>
+    {% elif error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+</body>
+</html>
+
