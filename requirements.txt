@@ -1,5 +1,4 @@
 asttokens==2.4.1
-bcc==0.18.0
 bleach==6.1.0
 blinker==1.8.2
 Brlapi==0.8.3
