@@ -4,12 +4,20 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-def get_papers_from_arxiv(topic, sort_by):
+def get_papers_from_arxiv(topic, sort_by='relevance'):
     base_url = "http://export.arxiv.org/api/query?"
-    search_query = f"search_query=all:{topic}"
-    
-    # Sorting parameter (arXiv supports sort by relevance and submission date)
-    sort_param = "sortBy=" + ("submittedDate" if sort_by == 'year' else "relevance")
+    search_query = f"search_query=title:{topic}"  # Search specifically in titles
+
+    # Determine sorting parameter
+    if sort_by == 'year_asc':
+        sort_param = "sortBy=submittedDate"
+        order = False
+    elif sort_by == 'year_desc':
+        sort_param = "sortBy=submittedDate"
+        order = True
+    else:  # Default to relevance
+        sort_param = "sortBy=relevance"
+        order = None
 
     url = f"{base_url}{search_query}&{sort_param}&max_results=50"
     response = requests.get(url)
@@ -17,11 +25,11 @@ def get_papers_from_arxiv(topic, sort_by):
     if response.status_code == 200:
         data = response.text
         papers = []
-        
+
         # Parsing arXiv XML response
         import xml.etree.ElementTree as ET
         root = ET.fromstring(data)
-        
+
         for entry in root.findall('{http://www.w3.org/2005/Atom}entry'):
             title = entry.find('{http://www.w3.org/2005/Atom}title').text
             authors = ', '.join([author.find('{http://www.w3.org/2005/Atom}name').text for author in entry.findall('{http://www.w3.org/2005/Atom}author')])
@@ -37,7 +45,9 @@ def get_papers_from_arxiv(topic, sort_by):
             })
 
         # Sorting logic
-        if sort_by == 'year':
+        if sort_by == 'year_asc':
+            papers.sort(key=lambda x: x['year'])
+        elif sort_by == 'year_desc':
             papers.sort(key=lambda x: x['year'], reverse=True)
         
         return papers
@@ -47,7 +57,7 @@ def get_papers_from_arxiv(topic, sort_by):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     papers = []
-    sort_by = request.form.get('sort_by')  # Safely get sort_by
+    sort_by = request.form.get('sort_by', 'relevance')  # Default to relevance if not specified
     topic = request.form.get('topic')  # Safely get topic
 
     if request.method == 'POST' and topic:

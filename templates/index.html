@@ -9,16 +9,17 @@
 <body>
 
     <div class="container">
-        <h1>Find Research papers from ArXiv</h1>
+        <h1>Find Research Papers from ArXiv</h1>
         <h2>Just type your topic!</h2>
 
         <!-- Search form -->
         <form method="POST">
             <div class="input-group">
-                <input type="text" id="topic" name="topic" required placeholder="Enter a research topic" value="{{ request.form['topic'] if request.form.get('topic') else '' }}">
+                <input type="text" id="topic" name="topic" required placeholder="Enter a research topic" value="{{ request.form.get('topic', '') }}">
                 <select name="sort_by" id="sort_by">
-                    <option value="" disabled selected>Sort by</option>
-                    <option value="year" {% if sort_by == 'year' %}selected{% endif %}>Year of Publication</option>
+                    <option value="relevance" {% if sort_by == 'relevance' %}selected{% endif %}>Relevance</option>
+                    <option value="year_asc" {% if sort_by == 'year_asc' %}selected{% endif %}>Year (Ascending)</option>
+                    <option value="year_desc" {% if sort_by == 'year_desc' %}selected{% endif %}>Year (Descending)</option>
                 </select>
                 <button type="submit">Search</button>
             </div>
@@ -27,7 +28,7 @@
 
     <!-- Results -->
     {% if papers %}
-        <h2>Results for "{{ request.form['topic'] }}":</h2>
+        <h2>Results for "{{ request.form.get('topic', '') }}":</h2>
         <div id="results">
             {% for paper in papers %}
                 <div class="paper">
